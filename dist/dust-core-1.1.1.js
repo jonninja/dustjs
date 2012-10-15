@@ -153,6 +153,13 @@ Context.prototype.get = function(key) {
       if (!(value === undefined)) {
         return value;
       }
+      // now look for 'get' on the head, in case it's a backbone model
+      if (ctx.head.get && typeof ctx.head.get === "function") {
+        value = ctx.head.get(key);
+        if (!(value === undefined)) {
+          return value;
+        }
+      }
     }
     ctx = ctx.tail;
   }
@@ -408,6 +415,12 @@ Chunk.prototype.section = function(elem, context, bodies, params) {
   When elem resolves to a value or object instead of an array, Dust sets the current context to the value 
   and renders the block one time.
   */
+
+  // check for a Backbone collection, and if found, use the array of models
+  if (elem && elem._byCid && elem.models) {
+    elem = elem.models;
+  }
+
   //non empty array is truthy, empty array is falsy
   if (dust.isArray(elem)) {
      if (body) {
